@@ -1,91 +1,8 @@
-# Divar MCP Server
-
-[English](#english) | [فارسی](#فارسی)
-
----
-
-## English
-
-**Divar MCP Server** is a Model Context Protocol (MCP) server for [Divar](https://divar.ir) — Iran's largest online marketplace. AI agents use it to search listings, filter by detailed criteria, get listing details, and find the best match from natural-language queries (Persian or English).
-
-### Features
-
-- Search listings by city, category, and detailed filters (price, area, rooms, etc.)
-- Get complete listing details with structured data (price, location, attributes, images)
-- Find best match from natural language queries (e.g., "cheapest 60m² 2-bedroom apartment for rent in Tehran Gisha with elevator posted in last 3 days")
-- Discover supported cities and categories
-- Built with Python 3.13+, FastMCP, httpx, and pydantic
-
-### Installation
-
-```bash
-uvx divar-mcp
-# or
-uv pip install divar-mcp
-```
-
-### Quick Start (MCP Client Configuration)
-
-For Claude Desktop or other MCP clients, add to your config:
-
-```json
-{
-  "mcpServers": {
-    "divar": {
-      "command": "uvx",
-      "args": ["divar-mcp"]
-    }
-  }
-}
-```
-
-Or run directly:
-
-```bash
-uv run divar-mcp
-```
-
-### MCP Tools
-
-| Tool | Description |
-|------|-------------|
-| `search_listings` | Search listings with filters and pagination |
-| `get_listing_details` | Get full details of a specific listing |
-| `find_best_match` | Find best matching listing from natural language query |
-| `get_cities` | List all supported cities |
-| `get_categories` | List categories for a city |
-| `compare_listings` | Compare 2-5 listings side by side |
-
-### Development
-
-```bash
-git clone https://github.com/your-org/divar-mcp
-cd divar-mcp
-uv sync
-uv run pytest
-uv run ruff check .
-uv run mypy src
-```
-
-### Compliance
-
-- Respects Divar's `robots.txt`
-- Rate limited to 2 req/s
-- Caches responses (cities 24h, search 5min, detail 1h)
-- No authentication or credentials stored
-- Personal/educational use only; commercial use requires Divar's permission
-
-### License
-
-MIT
-
----
-
-## فارسی
+# سرور MCP دیوار
 
 **سرور MCP دیوار** یک سرور پروتکل زمینه مدل (MCP) برای [دیوار](https://divar.ir) — بزرگ‌ترین بازار آنلاین ایران — است. عامل‌های هوش مصنوعی می‌توانند از آن برای جستجوی آگهی‌ها، فیلتر بر اساس معیارهای دقیق، دریافت جزئیات آگهی و یافتن بهترین تطابق از پرس‌وجوهای زبان طبیعی (فارسی یا انگلیسی) استفاده کنند.
 
-### امکانات
+## امکانات
 
 - جستجوی آگهی‌ها بر اساس شهر، دسته‌بندی و فیلترهای دقیق (قیمت، متراژ، اتاق و...)
 - دریافت جزئیات کامل آگهی با داده‌های ساختاریافته (قیمت، موقعیت، ویژگی‌ها، تصاویر)
@@ -93,7 +10,7 @@ MIT
 - کشف شهرها و دسته‌بندی‌های پشتیبانی شده
 - ساخته شده با پایتون ۳.۱۳+، FastMCP، httpx و pydantic
 
-### نصب
+## نصب
 
 ```bash
 uvx divar-mcp
@@ -101,7 +18,7 @@ uvx divar-mcp
 uv pip install divar-mcp
 ```
 
-### شروع سریع (تنظیم کلاینت MCP)
+## شروع سریع (تنظیم کلاینت MCP)
 
 برای کلاینت‌های MCP مانند Claude Desktop، به تنظیمات خود اضافه کنید:
 
@@ -122,7 +39,7 @@ uv pip install divar-mcp
 uv run divar-mcp
 ```
 
-### ابزارهای MCP
+## ابزارهای MCP
 
 | ابزار | توضیح |
 |------|--------|
@@ -133,7 +50,7 @@ uv run divar-mcp
 | `get_categories` | لیست دسته‌بندی‌ها برای یک شهر |
 | `compare_listings` | مقایسه ۲ تا ۵ آگهی به صورت جانبه‌به‌جانبه |
 
-### توسعه
+## توسعه
 
 ```bash
 git clone https://github.com/your-org/divar-mcp
@@ -144,7 +61,7 @@ uv run ruff check .
 uv run mypy src
 ```
 
-### انطباق و رعایت قوانین
+## انطباق و رعایت قوانین
 
 - احترام به `robots.txt` دیوار
 - محدودیت نرخ ۲ درخواست در ثانیه
@@ -152,6 +69,6 @@ uv run mypy src
 - بدون احراز هویت یا ذخیره اعتبار
 - فقط برای استفاده شخصی/آموزشی؛ استفاده تجاری نیازمند مجوز دیوار است
 
-### مجوز
+## مجوز
 
 MIT
