@@ -290,8 +290,17 @@ async def find_best_match(
 ) -> FindBestMatchResult:
     limit = limit or config.DEFAULT_MATCH_LIMIT
     filters = parse_query(query, city=city, category=category)
+    # For the search API, use a simplified query with just the core product keywords
+    # Extract keywords from the parsed query's query field
+    search_query = filters.query
+    if search_query:
+        # Split into words and keep only meaningful ones (length > 2, not stop words)
+        stop_words = {"بهترین", "ارزانترین", "مناسب", "برنامه", "نویسی", "باشه", "توی", "شهر", "کالا", "هم", "نو", "موجود", "بر اساس", "تاریخ", "درج", "جدیدترین", "ها", "در", "اولویت", "برای", "است", "این", "آن", "که", "و", "یا", "اما", "ولی", "چون", "زیرا", "بنابراین", "تمام", "صفحه", "صفح", "سایز", "سایزها", "اندازه", "قیمت", "گران", "ارزان", "کیفیت", "برند", "مدل", "رنگ", "مشکی", "سفید", "آبی", "قرمز"}
+        words = [w for w in search_query.split() if len(w) > 2 and w not in stop_words]
+        # Take first 2-3 meaningful words as search query (core product terms)
+        search_query = " ".join(words[:3])
     search_filters = filters.model_copy(
-        update={"page_size": min(limit, config.MAX_PAGE_SIZE), "page": 1}
+        update={"page_size": min(limit, config.MAX_PAGE_SIZE), "page": 1, "query": search_query}
     )
     result = await search(http, search_filters)
     best, alternatives, reasoning = best_match(result.listings, filters)

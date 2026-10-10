@@ -35,13 +35,20 @@ from ..utils.persian import (
 from ..utils.price import parse_amount, toman_to_rial
 
 _TOKEN_IN_URL_RE = re.compile(r"/([A-Za-z0-9_-]{4,20})$")
-_SLUG_IN_URL_RE = re.compile(r"/v/([^/]+)/[A-Za-z0-9_-]{4,20}$")
+_SLUG_IN_URL_RE = re.compile(r"/v/[^/]+/([A-Za-z0-9_-]{4,20})$")
 
 
 def _linked_index(entries: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     index: dict[str, dict[str, Any]] = {}
     for entry in entries:
-        match = _TOKEN_IN_URL_RE.search(str(entry.get("url") or ""))
+        url = str(entry.get("url") or "")
+        # Try to match /v/{slug}/{token} pattern first
+        match = _SLUG_IN_URL_RE.search(url)
+        if match:
+            index[match.group(1)] = entry
+            continue
+        # Fallback: try to match token at end of URL
+        match = _TOKEN_IN_URL_RE.search(url)
         if match:
             index[match.group(1)] = entry
     return index
@@ -161,11 +168,16 @@ def merge_listing(row: PostRow, ld: dict[str, Any], city: str, category: str) ->
 
 
 async def fetch_page(
-    http: HttpClient, city: str, category: str, cursor: str | None = None
+    http: HttpClient, city: str, category: str, cursor: str | None = None, query: str | None = None
 ) -> tuple[list[Listing], Pagination]:
     url = f"{config.BASE_URL}/s/{city}/{category}"
+    params = []
+    if query:
+        params.append(f"q={quote(query)}")
     if cursor:
-        url += f"?last_post_date={quote(cursor, safe='')}"
+        params.append(f"last_post_date={quote(cursor, safe='')}")
+    if params:
+        url += "?" + "&".join(params)
     html = await http.get_text(url, cache="search")
     state = extract_state(html)
     index = _linked_index(linked_data(state))
@@ -177,10 +189,17 @@ async def fetch_page(
 
 
 def _matches(listing: Listing, f: SearchFilters) -> bool:
-    if f.query:
-        haystack = normalize_text(f"{listing.title} {listing.description}")
-        if normalize_text(f.query) not in haystack:
-            return False
+    # For non-real-estate categories, the search API handles keyword matching.
+    # Only apply structured filters client-side.
+    if f.category != "real-estate" and f.query:
+        # Skip full-text query matching for products - API does this
+        pass
+    elif f.query:
+        haystack = normalize_text(f"{listing.title} {listing.description or ''}")
+        query_terms = [t for t in normalize_text(f.query).split() if len(t) > 1]
+        if query_terms:
+            if not all(term in haystack for term in query_terms):
+                return False
     if f.min_price is not None or f.max_price is not None:
         if listing.price_toman is None:
             return False
@@ -253,7 +272,7 @@ async def search(http: HttpClient, filters: SearchFilters) -> SearchResult:
     has_more = False
     hint: str | None = None
     for _ in range(config.MAX_CURSOR_HOPS):
-        listings, pagination = await fetch_page(http, filters.city, filters.category, cursor)
+        listings, pagination = await fetch_page(http, filters.city, filters.category, cursor, filters.query)
         new = 0
         for listing in listings:
             if listing.token not in collected:
